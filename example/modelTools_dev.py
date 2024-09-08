@@ -2,9 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 import pyDOE
-import pcraster
 import shutil
-import datetime
+
 
 
 def saveToASCII(data, fname, path, dtype, nodata, cellSize, xllcorner, yllcorner):
@@ -84,111 +83,6 @@ def getvalidIDX(inpath):
 
     return locals()['validIDX_theta_0'], locals()['validIDX_theta_1'], locals()['validIDX_theta_2'], locals()['validIDX_d2hSW_0'], locals()['validIDX_d2hSW_1'], locals()['validIDX_d2hSW_2']
             
-def createInputs(path, nrow, ncol, nodata, cellSize, xllcorner, yllcorner, startDate, endDate):
-    
-    spatialPath = path + "/spatial/"
-    climatePath = path+"/climate/"
-
-    if not os.path.exists(spatialPath):
-        os.makedirs(spatialPath)
-    if not os.path.exists(climatePath):
-        os.makedirs(climatePath)
-
-    startDate = datetime.datetime.strptime(startDate, "%Y-%m-%d")
-    endDate = datetime.datetime.strptime(endDate, "%Y-%m-%d")
-
-
-    # Catchment input
-    dem = np.full((nrow,nrow), nodata)
-    dem[1,1] = 55.0
-    saveToASCII(dem, "dem", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)   # DEM.asc
-
-    ref_map = pcraster.setclone(dem.shape[0], dem.shape[1], cellSize, 0.0, 0.0)
-    _dem = pcraster.numpy2pcr(pcraster.Scalar, np.array(dem), nodata)
-    _ldd = pcraster.lddcreate(_dem, 1e31, 1e31, 1e31, 1e31)
-    ldd = (pcraster.pcr2numpy(_ldd, nodata)).astype(np.intc)
-    ldd[ldd>10] = nodata
-    saveToASCII(ldd, "ldd", spatialPath, "int", nodata, cellSize, xllcorner, yllcorner)  # LDD.asc - flow direction
-
-    arr = np.full((nrow,nrow), 0)
-    saveToASCII(arr, "chanWidth", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)  # channel width
-
-    arr = np.full((nrow,nrow), 0)
-    saveToASCII(arr, "chanDepth", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)  # channel depth
-
-    arr = np.full((nrow,nrow), 0)
-    saveToASCII(arr, "chanLength", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)  # channel length
-
-    arr = np.full((nrow,nrow), nodata)
-    arr[1,1] = 0
-    saveToASCII(arr, "climzones", spatialPath, "int", nodata, cellSize, xllcorner, yllcorner)  # base climatic zones map with the grid geometry
-
-    arr = np.full((nrow,nrow), nodata)
-    arr[1,1] = 1
-    saveToASCII(arr, "Tsmask", spatialPath, "int", nodata, cellSize, xllcorner, yllcorner)  # what gauges need to be reported?
-
-    arr = np.full((nrow,nrow), nodata)                                                    # Soil depth of 3 layers
-    arr[1,1] = 0.2
-    saveToASCII(arr, "depth1", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-    arr = np.full((nrow,nrow), nodata)
-    arr[1,1] = 0.2
-    saveToASCII(arr, "depth2", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-    arr = np.full((nrow,nrow), nodata)                                                    # Soil porosity of 3 layers
-    arr[1,1] = 0.9
-    saveToASCII(arr, "porosity1", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-    arr = np.full((nrow,nrow), nodata)
-    arr[1,1] = 0.9
-    saveToASCII(arr, "porosity2", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-    arr = np.full((nrow,nrow), nodata)
-    arr[1,1] = 0.9
-    saveToASCII(arr, "porosity3", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-    # fixed parameters
-    # global parameters
-    arr[1,1] = 1
-    saveToASCII(arr, "param_rainMultiplier", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-    arr[1,1] = 0.6
-    saveToASCII(arr, "param_depth3", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-    
-    arr[1,1] = 0.3  
-    saveToASCII(arr, "param_k", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-    arr[1,1] = 0.3
-    saveToASCII(arr, "param_x", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-    arr[1,1] = 0.5/1000
-    saveToASCII(arr, "param_alpha_0", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-    arr[1,1] = 0.5/1000
-    saveToASCII(arr, "param_alpha_1", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-    arr[1,1] = 1/1000
-    saveToASCII(arr, "param_alpha_2", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-    arr[1,1] = 2/1000
-    saveToASCII(arr, "param_alpha_3", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-
-    arr[1,1] = 0/1000
-    saveToASCII(arr, "param_degreeFactorMin", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-    arr[1,1] = 3/1000
-    saveToASCII(arr, "param_degreeFactorMax", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-    arr[1,1] = 0.5
-    saveToASCII(arr, "param_degreeFactorIncrease", spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
-    for i in range(4):  # vegetation-dependent parameters
-        arr[1,1] = 0
-        saveToASCII(arr, "param_pI_"+str(i), spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-        arr[1,1] = 0
-        saveToASCII(arr, "param_ptheta1_"+str(i), spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-        arr[1,1] = 0
-        saveToASCII(arr, "param_ptheta2_"+str(i), spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-        arr[1,1] = 0
-        saveToASCII(arr, "param_ptheta3_"+str(i), spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-        arr[1,1] = 1
-        saveToASCII(arr, "param_leakage_weight_"+str(i), spatialPath, "double", nodata, cellSize, xllcorner, yllcorner)
-
 def param_sampling(savePath, nsample):  
     
     paramNames, paramMins, paramMaxs = getParamAttributes()
@@ -252,7 +146,7 @@ def saveOutputs(inputPath, runPath, savePath, nsample, validIdxMask):
     print('Results saved at   :     ', outputPath)
             
 def caliRun(inputPath, modelPath, modelName, runPath, nsample, nrow, ncol, nodata, cellSize, xllcorner, yllcorner, startDate, endDate, recomplie):
-    #createInputs(inputPath, nrow, ncol, nodata, cellSize, xllcorner, yllcorner, startDate, endDate)  
+
     sortEnv(inputPath, modelPath, modelName, runPath, recomplie)
 
     os.chdir(runPath)

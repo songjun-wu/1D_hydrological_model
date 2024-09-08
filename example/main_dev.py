@@ -44,7 +44,7 @@ nsample = 100
 
 time0 = time.time()
 print('RAM memory used:', psutil.virtual_memory()[2])
-modelTools_dev.createInputs(inputPath, nrow, ncol, nodata, cellSize, xllcorner, yllcorner, startDate, endDate)  # create inputs for test case
+
 modelTools_dev.caliRun(inputPath, modelPath, modelName, runPath, nsample, nrow, ncol, nodata, cellSize, xllcorner, yllcorner, startDate, endDate, recomplie)  # run simuations
 modelTools_dev.saveOutputs(inputPath, runPath, resultPath, nsample, validIdxMask=False)  # save outputs
 time1 = time.time()

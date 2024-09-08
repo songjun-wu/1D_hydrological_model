@@ -1,6 +1,6 @@
 The repository contains a 1D model that can simulate simultaneously hydrological fluxes and tracers. It is developped bsaed on EcoHydroPlot by Stevenson et al., 2023.
 
-To compile the model, simply direct to folder release_linux and make. An execute will be created.
+To compile the model, simply direct to folder release_linux and make. An execute will be created. Note the compilation should be operated on Linux.
 
 *******************************
 The model needs basic GIS setting and climatic inputs. They should be located respectively in folder data/spatial and data/climate. Since this model is only limited to 1D, all spatial files are formalised as 3*3 raster. The parameters should also be specified in the same folder. 

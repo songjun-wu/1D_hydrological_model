@@ -3,8 +3,6 @@ import sys
 import time
 import numpy as np
 from pathlib import Path
-from optparse import OptionParser
-
 import modelTools_dev
 import psutil
 
